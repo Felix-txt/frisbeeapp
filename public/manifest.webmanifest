@@ -1,0 +1,14 @@
+{
+  "name": "Disc Golf Scorecard",
+  "short_name": "Disc Golf",
+  "description": "Track disc golf rounds with your friends, one phone each.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f1713",
+  "theme_color": "#0f1713",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0f1713" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Disc Golf" />
+<title>Disc Golf Scorecard</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="stylesheet" href="style.css" />
+<link rel="apple-touch-icon" href="icon.svg" />
+<link rel="icon" href="icon.svg" type="image/svg+xml" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <h1>Disc Golf</h1>
+    <div class="conn" id="conn" hidden><span class="conn-dot"></span><span id="conn-text">Live</span></div>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button class="tab" data-view="home" type="button">Play</button>
+    <button class="tab" data-view="history" type="button">History</button>
+    <button class="tab" data-view="stats" type="button">Stats</button>
+  </nav>
+</header>
+
+<main id="app">
+
+  <!-- ================= HOME ================= -->
+  <section id="view-home" class="view">
+    <div class="card hero">
+      <h2>Start or join a round</h2>
+      <p class="muted">One phone per player — everybody enters their own score.</p>
+      <button id="go-create" class="btn primary big" type="button">Start new round</button>
+      <button id="go-join" class="btn big" type="button">Join with code</button>
+    </div>
+    <div class="card" id="resume-card" hidden>
+      <h3>Continue</h3>
+      <div id="resume-body"></div>
+    </div>
+  </section>
+
+  <!-- ================= JOIN ================= -->
+  <section id="view-join" class="view">
+    <div class="card">
+      <h2>Join a round</h2>
+      <p class="muted">Ask the host for the 4-character code.</p>
+
+      <label class="field">
+        <span>Round code</span>
+        <input id="join-code" class="code-input" type="text" inputmode="latin"
+               autocapitalize="characters" autocomplete="off" spellcheck="false"
+               maxlength="4" placeholder="AB12" aria-label="Round code" />
+      </label>
+
+      <button id="find-round" class="btn primary big" type="button">Find round</button>
+      <p id="join-error" class="error"></p>
+
+      <div id="seat-picker" hidden>
+        <h3>Who are you?</h3>
+        <p class="muted" id="seat-course"></p>
+        <div id="seat-list" class="seat-list"></div>
+        <label class="field">
+          <span>Not in the list? Add yourself</span>
+          <input id="join-name" type="text" placeholder="Your name" autocomplete="off" maxlength="24" />
+        </label>
+        <button id="join-as-new" class="btn big" type="button">Join as new player</button>
+      </div>
+    </div>
+    <button class="btn ghost big" data-back="home" type="button">Back</button>
+  </section>
+
+  <!-- ================= CREATE ================= -->
+  <section id="view-create" class="view">
+    <div class="card">
+      <h2>New round</h2>
+
+      <label class="field">
+        <span>Your name</span>
+        <input id="host-name" type="text" placeholder="Your name" autocomplete="off" maxlength="24" />
+      </label>
+
+      <label class="field">
+        <span>Course</span>
+        <input id="course" type="text" placeholder="Järva DiscGolfPark" autocomplete="off" maxlength="40" />
+      </label>
+
+      <div class="field">
+        <span>Holes</span>
+        <div class="chip-row" id="hole-presets">
+          <button class="chip" data-holes="9" type="button">9</button>
+          <button class="chip active" data-holes="18" type="button">18</button>
+        </div>
+        <input id="holes" type="number" min="1" max="36" value="18" />
+      </div>
+
+      <div class="field">
+        <span>Friends (optional — they can also join with the code)</span>
+        <div id="player-list" class="player-list"></div>
+        <button id="add-player" class="btn ghost" type="button">+ Add player</button>
+      </div>
+
+      <details class="pars">
+        <summary>Par per hole (all 3 by default)</summary>
+        <div id="par-grid" class="par-grid"></div>
+      </details>
+
+      <button id="start-round" class="btn primary big" type="button">Create round</button>
+      <p id="setup-error" class="error"></p>
+    </div>
+    <button class="btn ghost big" data-back="home" type="button">Back</button>
+  </section>
+
+  <!-- ================= LOBBY ================= -->
+  <section id="view-lobby" class="view">
+    <div class="card center">
+      <p class="muted">Round code</p>
+      <div class="code-display" id="lobby-code">----</div>
+      <p class="muted" id="lobby-course"></p>
+      <div class="lobby-actions">
+        <button id="share-link" class="btn primary" type="button">Share link</button>
+        <button id="copy-link" class="btn" type="button">Copy link</button>
+      </div>
+      <p class="hint" id="lobby-url"></p>
+    </div>
+
+    <div class="card">
+      <h3>Players <span class="count" id="lobby-count"></span></h3>
+      <div id="lobby-players" class="seat-list"></div>
+      <p class="hint">Friends open the link, type the code and tap their name.</p>
+    </div>
+
+    <div class="sticky-bar">
+      <button id="lobby-start" class="btn primary big" type="button">Start playing</button>
+    </div>
+  </section>
+
+  <!-- ================= PLAY ================= -->
+  <section id="view-play" class="view">
+    <div class="card play-card">
+      <div class="play-head">
+        <div class="play-head-text">
+          <div class="course-name" id="play-course"></div>
+          <div class="hint" id="play-sub"></div>
+        </div>
+        <button id="open-lobby" class="btn ghost small" type="button">Code</button>
+      </div>
+
+      <div class="hole-nav">
+        <button id="prev-hole" class="btn round" type="button" aria-label="Previous hole">‹</button>
+        <div class="hole-info">
+          <div class="hole-number">Hole <span id="hole-number">1</span></div>
+          <div class="hole-par">Par <span id="hole-par">3</span></div>
+        </div>
+        <button id="next-hole" class="btn round" type="button" aria-label="Next hole">›</button>
+      </div>
+
+      <div id="hole-dots" class="hole-dots"></div>
+    </div>
+
+    <!-- your own score, big and thumb friendly -->
+    <div class="card me-card" id="me-card">
+      <div class="me-head">
+        <span class="me-name" id="me-name">You</span>
+        <span class="tag" id="me-tag">–</span>
+      </div>
+      <div class="me-score">
+        <button class="big-step" id="me-minus" type="button" aria-label="One less">−</button>
+        <div class="me-value" id="me-value">–</div>
+        <button class="big-step" id="me-plus" type="button" aria-label="One more">+</button>
+      </div>
+      <div class="quick-row" id="quick-row"></div>
+    </div>
+
+    <div class="card">
+      <div class="row-between">
+        <h3 class="flush">This hole</h3>
+        <label class="switch">
+          <input type="checkbox" id="edit-all" />
+          <span>Enter for everyone</span>
+        </label>
+      </div>
+      <div id="score-inputs" class="score-inputs"></div>
+    </div>
+
+    <div class="card">
+      <h3 class="flush">Standings</h3>
+      <ol id="live-list" class="live-list"></ol>
+      <button id="scorecard-toggle" class="btn ghost small full" type="button">Show full scorecard</button>
+      <div id="scorecard-card" hidden>
+        <div class="table-wrap"><table id="scorecard" class="scorecard"></table></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <button id="finish-round" class="btn primary big" type="button">Finish round</button>
+      <button id="leave-round" class="btn ghost big" type="button">Leave round</button>
+      <button id="abandon-round" class="btn danger big" type="button">Delete round</button>
+    </div>
+  </section>
+
+  <!-- ================= RESULT ================= -->
+  <section id="view-result" class="view">
+    <div class="card">
+      <p class="muted" id="result-course"></p>
+      <h2 id="result-title">Result</h2>
+      <div id="podium" class="podium"></div>
+      <div class="table-wrap"><table id="result-table" class="scorecard"></table></div>
+      <h3>Player stats</h3>
+      <div id="result-stats" class="stat-cards"></div>
+      <div class="stack">
+        <button id="result-new" class="btn primary big" type="button">New round</button>
+        <button id="result-reopen" class="btn ghost big" type="button">Keep playing</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HISTORY ================= -->
+  <section id="view-history" class="view">
+    <div class="card">
+      <h2>Played rounds</h2>
+      <div id="history-list" class="history-list"></div>
+    </div>
+  </section>
+
+  <!-- ================= STATS ================= -->
+  <section id="view-stats" class="view">
+    <div class="card">
+      <h2>All-time</h2>
+      <p class="muted">Every finished round counts.</p>
+      <div class="table-wrap"><table id="stats-table" class="scorecard"></table></div>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>

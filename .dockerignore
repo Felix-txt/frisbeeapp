@@ -1,0 +1,15 @@
+# keep the build context tiny and never bake local state into the image
+node_modules
+npm-debug.log*
+data
+*.bak
+*.tmp
+.git
+.gitignore
+.env
+.env.*
+.DS_Store
+Dockerfile
+.dockerignore
+docker-compose*.yml
+README.md

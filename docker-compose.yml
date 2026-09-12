@@ -1,0 +1,51 @@
+services:
+  app:
+    build: .
+    image: discgolf-scorecard
+    container_name: discgolf
+    restart: unless-stopped
+
+    # Reap zombie processes; the server itself still receives SIGTERM directly
+    # so it can flush scores to disk before the container stops.
+    init: true
+    stop_grace_period: 15s
+
+    environment:
+      PORT: 3000
+      TZ: ${TZ:-Europe/Stockholm}
+
+    # Published for nginx on the host to proxy to.
+    # BIND=127.0.0.1 (default) means only the server itself can reach the port,
+    # so the app is never exposed directly to the internet — nginx is the only
+    # way in. Set BIND=0.0.0.0 if you want to reach it over the LAN as well.
+    ports:
+      - "${BIND:-127.0.0.1}:${HOST_PORT:-3000}:3000"
+
+    volumes:
+      - discgolf-data:/app/data
+
+    # Nothing is written outside the data volume.
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    # If your nginx runs in Docker too, drop the `ports:` block above, attach
+    # both containers to the same network and proxy to http://discgolf:3000
+    # instead of a host port.
+    #
+    # networks: [web]
+
+# networks:
+#   web:
+#     external: true
+
+volumes:
+  discgolf-data:

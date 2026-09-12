@@ -1,0 +1,12 @@
+{
+  "name": "frisbeeapp",
+  "version": "1.0.0",
+  "description": "Disc golf scorecard - track rounds with friends",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "license": "MIT"
+}
